@@ -14,19 +14,19 @@ suite("Functional Tests", function () {
         .request(server)
         .get("/hello")
         .end(function (err, res) {
-          assert.fail(res.status, 200);
-          assert.fail(res.text, "hello Guest");
+          assert.equal(res.status, 200);
+          assert.equal(res.text, "hello Guest");
           done();
         });
     });
     // #2
-    test("Test GET /hello with your name", function (done) {
+    test("Test GET /hello?name=Toshiba55inch4kUhd", function (done) {
       chai
         .request(server)
-        .get("/hello?name=xy_z")
+        .get("/hello?name=Toshiba55inch4kUhd")
         .end(function (err, res) {
-          assert.fail(res.status, 200);
-          assert.fail(res.text, "hello xy_z");
+          assert.equal(res.status, 200);
+          assert.equal(res.text, "hello Toshiba55inch4kUhd");
           done();
         });
     });
@@ -34,33 +34,60 @@ suite("Functional Tests", function () {
     test('send {surname: "Colombo"}', function (done) {
       chai
         .request(server)
-        .put("/travellers")
-
+        .put('/travellers')
+        /** send {surname: 'Colombo'} here **/
+        .send({ surname: 'Colombo' })
+        // .send({...})
         .end(function (err, res) {
-          assert.fail();
+          
+          assert.equal(res.status, 200, 'response status should be 200');
+          assert.equal(res.type, 'application/json', 'Response should be json');
+          assert.equal(
+            res.body.name,
+            'Cristoforo',
+          );
+          assert.equal(
+            res.body.surname,
+            'Colombo',
+          );
 
           done();
         });
     });
     // #4
     test('send {surname: "da Verrazzano"}', function (done) {
-      assert.fail();
-
+        chai
+        .request(server)
+        .put('/travellers')
+        .send({surname: "de Verrazzano"})
+        .end(function(err, res){
+          assert.equal(res.status, 200);
+          assert.equal(res.type, 'application/json');
+          assert.equal(res.body.name, 'Giovanni');
+          assert.equal(res.body.surname, 'da Verrazzano');
+        })
       done();
     });
   });
 });
 
 const Browser = require("zombie");
-
+Browser.site = 'https://testing-chai-fcc.cryscobyte.repl.co';
 suite("Functional Tests with Zombie.js", function () {
+  const browser = new Browser;
+  suiteSetup(function(done) {
+  return browser.visit('/', done);
+});
 
   suite('"Famous Italian Explorers" form', function () {
     // #5
     test('submit "surname" : "Colombo" - write your e2e test...', function (done) {
       browser.fill("surname", "Colombo").pressButton("submit", function () {
-        assert.fail();
-
+        browser.assert.success();
+        browser.assert.text('span#name', 'Cristoforo');
+        browser.assert.text('span#surname', 'Colombo');
+        browser.assert.text('span#dates', '1451 - 1506');
+        browser.assert.element('span#dates', 1);
         done();
       });
     });
